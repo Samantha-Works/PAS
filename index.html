@@ -535,7 +535,145 @@ render();
     var frame=document.createElement('iframe'); frame.style.position='fixed'; frame.style.left='-10000px'; frame.style.top='0'; frame.style.width='1px'; frame.style.height='1px'; frame.style.border='0'; document.body.appendChild(frame);
     var doc=frame.contentDocument || frame.contentWindow.document;
     doc.open();
-    doc.write('<!doctype html><html><head><title>Pick-A-Square Print</title><style>@page{size:portrait;margin:.25in}html,body{margin:0;background:#fff;text-align:center}img{max-width:100%;max-height:99vh;object-fit:contain}</style></head><body><img src="'+data+'"></body></html>');
+    doc.write('<!doctype html><html><head><title>Pick-A-Square Print</title><style>@page{size:portrait;margin:.25in}html,body{margin:0;background:#fff;text-align:center}img{max-width:100%;max-height:99vh;object-fit:contain}</style></head><body><img src="'+data+'">
+
+<style id="nova-v221-scroll-safe-multiselect-css">
+/* Nova v2.21: vertical scrolling no longer selects squares; drag multi-select still works */
+#board, #board .square {
+  touch-action: pan-y !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+#board.nova-selecting, #board.nova-selecting .square {
+  touch-action: none !important;
+}
+</style>
+<script id="nova-v221-scroll-safe-multiselect-js">
+(function(){
+  function getS(){ try { return state; } catch(e){ return window.state || null; } }
+  function byId(id){ return document.getElementById(id); }
+  function storeNow(){
+    try { const s=getS(); if(s && typeof games !== 'undefined' && s.id) games[s.id]=JSON.parse(JSON.stringify(s)); } catch(e){}
+    try { if(typeof persist==='function') persist(); } catch(e){}
+    try { if(typeof novaLongSaveNow==='function') novaLongSaveNow(); } catch(e){}
+  }
+  function ensureSelected(s){ if(!Array.isArray(s.selected)) s.selected=[]; }
+  function hasSel(s,i){ return s.selected.indexOf(i)>=0; }
+  function addSel(s,i){ if(!hasSel(s,i)) s.selected.push(i); }
+  function remSel(s,i){ const n=s.selected.indexOf(i); if(n>=0) s.selected.splice(n,1); }
+  function setVisual(i,on){ const el=document.querySelector('#board .square[data-i="'+i+'"]'); if(el) el.classList.toggle('selected',!!on); }
+  function indexFromPoint(x,y){
+    const p=document.elementFromPoint(x,y);
+    const el=p && p.closest ? p.closest('#board .square[data-i]') : null;
+    if(!el) return null;
+    const i=Number(el.dataset.i);
+    return Number.isFinite(i) ? i : null;
+  }
+  function assignSelectedFromInput(){
+    const s=getS(); if(!s || !s.picks) return;
+    ensureSelected(s);
+    const input=byId('nameInput');
+    const paid=byId('paidCheck');
+    const name=(input && input.value ? input.value : '').trim();
+    if(!name){ if(s.selected.length) alert('Type the name, then press Enter to save those selected squares.'); return; }
+    if(!s.selected.length){ storeNow(); return; }
+    s.selected.forEach(function(i){ if(i>=0 && i<100) s.picks[i]={name:name,paid:paid?!!paid.checked:true,trace:''}; });
+    s.selected=[];
+    if(input) input.value='';
+    if(typeof render==='function') render();
+    setTimeout(function(){ if(typeof novaApplyPlayerColors==='function') novaApplyPlayerColors(); },0);
+    storeNow();
+  }
+  window.savePick=assignSelectedFromInput;
+  window.novaEnterSaveSelection=assignSelectedFromInput;
+
+  function hardRebindBoard(){
+    let b=byId('board'); if(!b) return;
+    // Clone removes the older v2.13 pointer handlers that selected during normal scroll.
+    const clone=b.cloneNode(true);
+    b.parentNode.replaceChild(clone,b);
+    b=clone;
+    b.setAttribute('tabindex','0');
+    b.setAttribute('role','grid');
+    let idx=0;
+    b.querySelectorAll('.square').forEach(function(el){ el.dataset.i=String(idx++); el.onclick=null; });
+
+    let active=false, mode='idle', sx=0, sy=0, pointerId=null, startIndex=null, addMode=true, lastIndex=null;
+    const TAP_LIMIT=8, SCROLL_SLOP=6;
+    function apply(i){
+      const s=getS(); if(!s || i===null || i===lastIndex) return;
+      ensureSelected(s); lastIndex=i;
+      if(addMode){ addSel(s,i); setVisual(i,true); }
+      else { remSel(s,i); setVisual(i,false); }
+    }
+    function finish(save){
+      if(!active) return;
+      const wasSelecting=mode==='select';
+      active=false; mode='idle'; lastIndex=null; pointerId=null; startIndex=null;
+      b.classList.remove('nova-selecting');
+      if(save || wasSelecting) storeNow();
+    }
+    b.addEventListener('pointerdown',function(e){
+      const el=e.target && e.target.closest ? e.target.closest('.square[data-i]') : null;
+      if(!el) return;
+      const s=getS(); if(!s) return;
+      ensureSelected(s);
+      active=true; mode='idle'; sx=e.clientX; sy=e.clientY; pointerId=e.pointerId; lastIndex=null;
+      startIndex=Number(el.dataset.i);
+      addMode=!hasSel(s,startIndex);
+      try{ b.focus({preventScroll:true}); }catch(_){ try{ b.focus(); }catch(__){} }
+    },{passive:true});
+    b.addEventListener('pointermove',function(e){
+      if(!active || (pointerId!==null && e.pointerId!==pointerId)) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy, ax=Math.abs(dx), ay=Math.abs(dy);
+      if(mode==='idle'){
+        if(ax<TAP_LIMIT && ay<TAP_LIMIT) return;
+        if(ay > ax + SCROLL_SLOP){ finish(false); return; }
+        mode='select';
+        b.classList.add('nova-selecting');
+        try{ b.setPointerCapture(e.pointerId); }catch(_){}
+        e.preventDefault();
+        apply(startIndex);
+      }
+      if(mode==='select'){
+        e.preventDefault();
+        apply(indexFromPoint(e.clientX,e.clientY));
+      }
+    },{passive:false});
+    b.addEventListener('pointerup',function(e){
+      if(!active || (pointerId!==null && e.pointerId!==pointerId)) return;
+      const ax=Math.abs(e.clientX-sx), ay=Math.abs(e.clientY-sy);
+      if(mode==='idle' && ax<TAP_LIMIT && ay<TAP_LIMIT){
+        e.preventDefault();
+        const s=getS(); if(s){ ensureSelected(s); if(addMode){ addSel(s,startIndex); setVisual(startIndex,true); } else { remSel(s,startIndex); setVisual(startIndex,false); } }
+        finish(true); return;
+      }
+      if(mode==='select') e.preventDefault();
+      finish(mode==='select');
+    },{passive:false});
+    b.addEventListener('pointercancel',function(){ finish(false); },{passive:true});
+    b.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); assignSelectedFromInput(); } });
+    b.addEventListener('click',function(e){ if(e.target && e.target.closest && e.target.closest('.square[data-i]')){ e.preventDefault(); e.stopPropagation(); } },true);
+  }
+
+  function bindInput(){
+    const input=byId('nameInput');
+    if(input){
+      input.placeholder='Enter name, select squares, press Enter';
+      input.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); assignSelectedFromInput(); } };
+    }
+  }
+  const oldRender=window.render;
+  if(oldRender){ window.render=function(){ oldRender(); setTimeout(function(){ hardRebindBoard(); bindInput(); },0); }; }
+  const oldRenderBoard=window.renderBoard;
+  if(oldRenderBoard){ window.renderBoard=function(){ oldRenderBoard(); setTimeout(hardRebindBoard,0); }; }
+  document.addEventListener('DOMContentLoaded',function(){ hardRebindBoard(); bindInput(); });
+  setTimeout(function(){ hardRebindBoard(); bindInput(); },100);
+  setTimeout(function(){ hardRebindBoard(); bindInput(); },700);
+})();
+</script>
+
+</body></html>');
     doc.close();
     frame.onload=function(){ setTimeout(function(){ try{ frame.contentWindow.focus(); frame.contentWindow.print(); }catch(e){ window.print(); } setTimeout(function(){ frame.remove(); },1000); },250); };
   };
@@ -1008,6 +1146,144 @@ render();
   setTimeout(rebind,50);
   setTimeout(rebind,400);
   setTimeout(rebind,1000);
+})();
+</script>
+
+
+
+<style id="nova-v221-scroll-safe-multiselect-css">
+/* Nova v2.21: vertical scrolling no longer selects squares; drag multi-select still works */
+#board, #board .square {
+  touch-action: pan-y !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+#board.nova-selecting, #board.nova-selecting .square {
+  touch-action: none !important;
+}
+</style>
+<script id="nova-v221-scroll-safe-multiselect-js">
+(function(){
+  function getS(){ try { return state; } catch(e){ return window.state || null; } }
+  function byId(id){ return document.getElementById(id); }
+  function storeNow(){
+    try { const s=getS(); if(s && typeof games !== 'undefined' && s.id) games[s.id]=JSON.parse(JSON.stringify(s)); } catch(e){}
+    try { if(typeof persist==='function') persist(); } catch(e){}
+    try { if(typeof novaLongSaveNow==='function') novaLongSaveNow(); } catch(e){}
+  }
+  function ensureSelected(s){ if(!Array.isArray(s.selected)) s.selected=[]; }
+  function hasSel(s,i){ return s.selected.indexOf(i)>=0; }
+  function addSel(s,i){ if(!hasSel(s,i)) s.selected.push(i); }
+  function remSel(s,i){ const n=s.selected.indexOf(i); if(n>=0) s.selected.splice(n,1); }
+  function setVisual(i,on){ const el=document.querySelector('#board .square[data-i="'+i+'"]'); if(el) el.classList.toggle('selected',!!on); }
+  function indexFromPoint(x,y){
+    const p=document.elementFromPoint(x,y);
+    const el=p && p.closest ? p.closest('#board .square[data-i]') : null;
+    if(!el) return null;
+    const i=Number(el.dataset.i);
+    return Number.isFinite(i) ? i : null;
+  }
+  function assignSelectedFromInput(){
+    const s=getS(); if(!s || !s.picks) return;
+    ensureSelected(s);
+    const input=byId('nameInput');
+    const paid=byId('paidCheck');
+    const name=(input && input.value ? input.value : '').trim();
+    if(!name){ if(s.selected.length) alert('Type the name, then press Enter to save those selected squares.'); return; }
+    if(!s.selected.length){ storeNow(); return; }
+    s.selected.forEach(function(i){ if(i>=0 && i<100) s.picks[i]={name:name,paid:paid?!!paid.checked:true,trace:''}; });
+    s.selected=[];
+    if(input) input.value='';
+    if(typeof render==='function') render();
+    setTimeout(function(){ if(typeof novaApplyPlayerColors==='function') novaApplyPlayerColors(); },0);
+    storeNow();
+  }
+  window.savePick=assignSelectedFromInput;
+  window.novaEnterSaveSelection=assignSelectedFromInput;
+
+  function hardRebindBoard(){
+    let b=byId('board'); if(!b) return;
+    // Clone removes the older v2.13 pointer handlers that selected during normal scroll.
+    const clone=b.cloneNode(true);
+    b.parentNode.replaceChild(clone,b);
+    b=clone;
+    b.setAttribute('tabindex','0');
+    b.setAttribute('role','grid');
+    let idx=0;
+    b.querySelectorAll('.square').forEach(function(el){ el.dataset.i=String(idx++); el.onclick=null; });
+
+    let active=false, mode='idle', sx=0, sy=0, pointerId=null, startIndex=null, addMode=true, lastIndex=null;
+    const TAP_LIMIT=8, SCROLL_SLOP=6;
+    function apply(i){
+      const s=getS(); if(!s || i===null || i===lastIndex) return;
+      ensureSelected(s); lastIndex=i;
+      if(addMode){ addSel(s,i); setVisual(i,true); }
+      else { remSel(s,i); setVisual(i,false); }
+    }
+    function finish(save){
+      if(!active) return;
+      const wasSelecting=mode==='select';
+      active=false; mode='idle'; lastIndex=null; pointerId=null; startIndex=null;
+      b.classList.remove('nova-selecting');
+      if(save || wasSelecting) storeNow();
+    }
+    b.addEventListener('pointerdown',function(e){
+      const el=e.target && e.target.closest ? e.target.closest('.square[data-i]') : null;
+      if(!el) return;
+      const s=getS(); if(!s) return;
+      ensureSelected(s);
+      active=true; mode='idle'; sx=e.clientX; sy=e.clientY; pointerId=e.pointerId; lastIndex=null;
+      startIndex=Number(el.dataset.i);
+      addMode=!hasSel(s,startIndex);
+      try{ b.focus({preventScroll:true}); }catch(_){ try{ b.focus(); }catch(__){} }
+    },{passive:true});
+    b.addEventListener('pointermove',function(e){
+      if(!active || (pointerId!==null && e.pointerId!==pointerId)) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy, ax=Math.abs(dx), ay=Math.abs(dy);
+      if(mode==='idle'){
+        if(ax<TAP_LIMIT && ay<TAP_LIMIT) return;
+        if(ay > ax + SCROLL_SLOP){ finish(false); return; }
+        mode='select';
+        b.classList.add('nova-selecting');
+        try{ b.setPointerCapture(e.pointerId); }catch(_){}
+        e.preventDefault();
+        apply(startIndex);
+      }
+      if(mode==='select'){
+        e.preventDefault();
+        apply(indexFromPoint(e.clientX,e.clientY));
+      }
+    },{passive:false});
+    b.addEventListener('pointerup',function(e){
+      if(!active || (pointerId!==null && e.pointerId!==pointerId)) return;
+      const ax=Math.abs(e.clientX-sx), ay=Math.abs(e.clientY-sy);
+      if(mode==='idle' && ax<TAP_LIMIT && ay<TAP_LIMIT){
+        e.preventDefault();
+        const s=getS(); if(s){ ensureSelected(s); if(addMode){ addSel(s,startIndex); setVisual(startIndex,true); } else { remSel(s,startIndex); setVisual(startIndex,false); } }
+        finish(true); return;
+      }
+      if(mode==='select') e.preventDefault();
+      finish(mode==='select');
+    },{passive:false});
+    b.addEventListener('pointercancel',function(){ finish(false); },{passive:true});
+    b.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); assignSelectedFromInput(); } });
+    b.addEventListener('click',function(e){ if(e.target && e.target.closest && e.target.closest('.square[data-i]')){ e.preventDefault(); e.stopPropagation(); } },true);
+  }
+
+  function bindInput(){
+    const input=byId('nameInput');
+    if(input){
+      input.placeholder='Enter name, select squares, press Enter';
+      input.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); assignSelectedFromInput(); } };
+    }
+  }
+  const oldRender=window.render;
+  if(oldRender){ window.render=function(){ oldRender(); setTimeout(function(){ hardRebindBoard(); bindInput(); },0); }; }
+  const oldRenderBoard=window.renderBoard;
+  if(oldRenderBoard){ window.renderBoard=function(){ oldRenderBoard(); setTimeout(hardRebindBoard,0); }; }
+  document.addEventListener('DOMContentLoaded',function(){ hardRebindBoard(); bindInput(); });
+  setTimeout(function(){ hardRebindBoard(); bindInput(); },100);
+  setTimeout(function(){ hardRebindBoard(); bindInput(); },700);
 })();
 </script>
 
