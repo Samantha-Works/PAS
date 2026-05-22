@@ -169,14 +169,14 @@ body > .footerCopyright { display: none !important; }
 <h2>New Game</h2>
 <div class="formGrid"><div class="full"><label>Game Name</label><input id="newName" value="Pick-A-Square Game"></div><div><label>Away / Top</label><input id="newAway" value="Away"></div><div><label>Home / Side</label><input id="newHome" value="Home"></div><div><label>Amount</label><input id="newPrice" inputmode="decimal" value="10"></div><div><label>Date</label><input id="newDate" type="date"></div></div>
 <div class="actionsRow"><button class="green" onclick="createBlankGame()">Create Blank</button><button class="gold" onclick="closeModal('newGameModal')">Cancel</button></div>
-<div class="fileInputBox"><label style="text-transform:none;letter-spacing:0;color:#fff0b8;font-size:17px">Upload Filled Document / Pretty Name Fill</label><p style="margin:5px 0 8px">Upload the filled board, place the four gold corner dots around the inside 10×10 name grid, then apply the actual visible names into the squares.</p><input id="filledDocInput" type="file" accept="image/*" onchange="loadTraceImage(event)"><img id="filledPreview" class="previewImg"><div class="actionsRow"><button class="green" onclick="openTraceTool()">Open Trace Tool</button><button class="gold" onclick="createThenTrace()">Create + Trace</button></div></div>
+<div class="fileInputBox"><label style="text-transform:none;letter-spacing:0;color:#fff0b8;font-size:17px">Upload Filled Document / Name Fill</label><p style="margin:5px 0 8px">Upload the filled board, place the four gold corner dots around the inside 10×10 name grid, then apply the actual visible names into the squares.</p><input id="filledDocInput" type="file" accept="image/*" onchange="loadTraceImage(event)"><img id="filledPreview" class="previewImg"><div class="actionsRow"><button class="green" onclick="openTraceTool()">Open Trace Tool</button><button class="gold" onclick="createThenTrace()">Create + Trace</button></div></div>
 </div></div>
 
 <div id="setupModal" class="modal hidden"><div class="sheet"><h2>Game Setup</h2><div class="formGrid"><div class="full"><label>Game Name</label><input id="setupName"></div><div><label>Away / Top</label><input id="setupAway"></div><div><label>Home / Side</label><input id="setupHome"></div><div><label>Amount</label><input id="setupPrice" inputmode="decimal"></div><div><label>Date</label><input id="setupDate" type="date"></div></div><div class="actionsRow"><button class="green" onclick="saveSetup()">Save Setup</button><button class="gold" onclick="closeModal('setupModal')">Cancel</button></div></div></div>
 
-<div id="traceModal" class="modal hidden"><div class="sheet"><h2>Pretty Name Fill</h2><p>Drag the four gold corner dots onto the inside corners of the 10×10 name grid. Then Create Trace and Apply Pretty Names.</p><div id="traceBox" class="traceBox"><canvas id="traceCanvas" class="traceCanvas" width="900" height="640"></canvas><div class="cornerDot" id="dotTL" data-dot="tl"></div><div class="cornerDot" id="dotTR" data-dot="tr"></div><div class="cornerDot" id="dotBR" data-dot="br"></div><div class="cornerDot" id="dotBL" data-dot="bl"></div></div><div class="actionsRow"><button class="green" onclick="createTraceSnips()">Create Trace</button><button class="gold" onclick="applyTrace()">Apply Pretty Names</button></div><div class="actionsRow"><button class="dark" onclick="closeModal('traceModal')">Close</button><button class="hot" onclick="clearTrace()">Clear Trace</button></div><div id="traceStatus" class="help">Ready.</div><div id="traceMini" class="traceMini"></div></div></div>
+<div id="traceModal" class="modal hidden"><div class="sheet"><h2>Name Fill</h2><p>Drag the four gold corner dots onto the inside corners of the 10×10 name grid. Then tap Apply Names to populate and save the board.</p><div id="traceBox" class="traceBox"><canvas id="traceCanvas" class="traceCanvas" width="900" height="640"></canvas><div class="cornerDot" id="dotTL" data-dot="tl"></div><div class="cornerDot" id="dotTR" data-dot="tr"></div><div class="cornerDot" id="dotBR" data-dot="br"></div><div class="cornerDot" id="dotBL" data-dot="bl"></div></div><div class="actionsRow"><button class="green" onclick="createTraceSnips()">Create Trace</button><button class="gold" onclick="applyTrace()">Apply Names</button></div><div class="actionsRow"><button class="dark" onclick="closeModal('traceModal')">Close</button><button class="hot" onclick="clearTrace()">Clear Trace</button></div><div id="traceStatus" class="help">Ready.</div><div id="traceMini" class="traceMini"></div></div></div>
 
-<div id="tutorialModal" class="modal hidden"><div class="sheet"><h2>How to Play</h2><p>Pick squares manually or use Pretty Name Fill under New Game to import a completed paper board.</p><div class="actionsRow"><button class="green" onclick="closeTutorial()">Start</button><button class="gold" onclick="closeModal('tutorialModal')">Close</button></div></div></div>
+<div id="tutorialModal" class="modal hidden"><div class="sheet"><h2>How to Play</h2><p>Pick squares manually or use Name Fill under New Game to import a completed paper board.</p><div class="actionsRow"><button class="green" onclick="closeTutorial()">Start</button><button class="gold" onclick="closeModal('tutorialModal')">Close</button></div></div></div>
 <div id="gamesModal" class="modal hidden"><div class="sheet"><h2>Games</h2><div id="gameList" class="gameList"></div><div class="actionsRow"><button class="green" onclick="saveCurrentGame()">Save Current</button><button class="gold" onclick="closeModal('gamesModal')">Close</button></div><div class="actionsRow"><button class="dark" onclick="backupJSON()">Backup JSON</button><button class="dark" onclick="restoreInput.click()">Restore JSON</button></div><input id="restoreInput" class="hidden" type="file" accept="application/json" onchange="restoreJSON(event)"></div></div>
 
 <script>
@@ -225,8 +225,8 @@ function dotPx(k){return {x:dots[k].x*traceCanvas.width,y:dots[k].y*traceCanvas.
 function interp(a,b,t){return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t}}
 function gridPoint(r,c){const tl=dotPx('tl'),tr=dotPx('tr'),br=dotPx('br'),bl=dotPx('bl');const left=interp(tl,bl,r/10),right=interp(tr,br,r/10);return interp(left,right,c/10)}
 function drawDotGrid(ctx){ctx.strokeStyle='rgba(34,197,94,.95)';ctx.lineWidth=3;ctx.beginPath();let p=gridPoint(0,0);ctx.moveTo(p.x,p.y);p=gridPoint(0,10);ctx.lineTo(p.x,p.y);p=gridPoint(10,10);ctx.lineTo(p.x,p.y);p=gridPoint(10,0);ctx.lineTo(p.x,p.y);ctx.closePath();ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1;for(let i=1;i<10;i++){let a=gridPoint(0,i),b=gridPoint(10,i);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();a=gridPoint(i,0);b=gridPoint(i,10);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}
-function createTraceSnips(){if(!traceImage){alert('Upload a filled board image first.');return}traceSnips=[];const work=document.createElement('canvas');work.width=traceCanvas.width;work.height=traceCanvas.height;const wctx=work.getContext('2d');wctx.drawImage(traceImage,0,0,work.width,work.height);for(let r=0;r<10;r++)for(let c=0;c<10;c++){const p1=gridPoint(r,c),p2=gridPoint(r,c+1),p3=gridPoint(r+1,c+1),p4=gridPoint(r+1,c);const minX=Math.min(p1.x,p2.x,p3.x,p4.x),maxX=Math.max(p1.x,p2.x,p3.x,p4.x),minY=Math.min(p1.y,p2.y,p3.y,p4.y),maxY=Math.max(p1.y,p2.y,p3.y,p4.y);const padX=(maxX-minX)*.04,padY=(maxY-minY)*.10;const cnv=document.createElement('canvas');cnv.width=160;cnv.height=90;const ctx=cnv.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,cnv.width,cnv.height);ctx.drawImage(work,minX+padX,minY+padY,(maxX-minX)-padX*2,(maxY-minY)-padY*2,0,0,cnv.width,cnv.height);traceSnips.push(cnv.toDataURL('image/jpeg',0.68))}traceMini.innerHTML='';traceSnips.forEach(src=>{const img=document.createElement('img');img.src=src;traceMini.append(img)});traceStatus.textContent='Trace created. Review, then Apply Pretty Names.'}
-function applyTrace(){if(traceSnips.length!==100){alert('Create trace cells first.');return}for(let i=0;i<100;i++){state.picks[i]={name:'',paid:false,trace:traceSnips[i]}}state.selected=[];closeModal('traceModal');closeModal('newGameModal');render();saveCurrentGame(false);persist();alert('Pretty names imported and saved.')}
+function createTraceSnips(){if(!traceImage){alert('Upload a filled board image first.');return}traceSnips=[];const work=document.createElement('canvas');work.width=traceCanvas.width;work.height=traceCanvas.height;const wctx=work.getContext('2d');wctx.drawImage(traceImage,0,0,work.width,work.height);for(let r=0;r<10;r++)for(let c=0;c<10;c++){const p1=gridPoint(r,c),p2=gridPoint(r,c+1),p3=gridPoint(r+1,c+1),p4=gridPoint(r+1,c);const minX=Math.min(p1.x,p2.x,p3.x,p4.x),maxX=Math.max(p1.x,p2.x,p3.x,p4.x),minY=Math.min(p1.y,p2.y,p3.y,p4.y),maxY=Math.max(p1.y,p2.y,p3.y,p4.y);const padX=(maxX-minX)*.04,padY=(maxY-minY)*.10;const cnv=document.createElement('canvas');cnv.width=160;cnv.height=90;const ctx=cnv.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,cnv.width,cnv.height);ctx.drawImage(work,minX+padX,minY+padY,(maxX-minX)-padX*2,(maxY-minY)-padY*2,0,0,cnv.width,cnv.height);traceSnips.push(cnv.toDataURL('image/jpeg',0.68))}traceMini.innerHTML='';traceSnips.forEach(src=>{const img=document.createElement('img');img.src=src;traceMini.append(img)});traceStatus.textContent='Trace created. Tap Apply Names to populate and save.'}
+function applyTrace(){if(traceSnips.length!==100){alert('Create trace cells first.');return}for(let i=0;i<100;i++){state.picks[i]={name:'',paid:false,trace:traceSnips[i]}}state.selected=[];closeModal('traceModal');closeModal('newGameModal');render();saveCurrentGame(false);persist();alert('Names applied and saved.')}
 function clearTrace(){state.picks.forEach(p=>p.trace='');render();persist()}
 function downloadPNG(){const canvas=document.createElement('canvas');const W=1400,H=1700;canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');ctx.fillStyle='#120018';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 60px Arial';ctx.textAlign='center';ctx.fillText(state.name,W/2,80);const margin=40,gap=6,size=(W-margin*2-gap*10)/11;let y=130;[...board.children].forEach((el,idx)=>{const r=Math.floor(idx/11),c=idx%11,x=margin+c*(size+gap),yy=y+r*(size+gap);const isHead=el.classList.contains('head')||el.classList.contains('side')||el.classList.contains('corner');ctx.fillStyle=isHead?'#5a1d91':'#f6f2fb';ctx.strokeStyle='#7d35a8';ctx.lineWidth=2;roundRect(ctx,x,yy,size,size,12,true,true);ctx.fillStyle=isHead?'#fff0b8':'#1b1022';ctx.font='bold '+(isHead?20:18)+'px Arial';const txt=el.textContent.replace('✓','').trim();wrapText(ctx,txt,x+size/2,yy+size/2-8,size-6,18)});ctx.fillStyle='#e8d9fb';ctx.font='24px Arial';ctx.fillText('© 2026 SRL - S.R.Langlois • Pick-A-Square',W/2,H-40);canvas.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(state.name||'pick-a-square')+'.png';a.click()})}
 function roundRect(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke()}
@@ -320,7 +320,7 @@ render();
       img.src=src;
       traceMini.append(img);
     });
-    traceStatus.textContent='Pretty names created. Tap Apply Pretty Names to place them on the main board.';
+    traceStatus.textContent='Names created. Tap Apply Names to populate and save.';
   };
 
   window.applyTrace = async function(){
@@ -358,9 +358,9 @@ render();
     setTimeout(()=>{ if (typeof render === 'function') render(); }, 50);
 
     if(saved){
-      alert('Pretty names imported to the main board and saved.');
+      alert('Names applied and saved.');
     } else {
-      alert('Pretty names imported to the main board. Browser storage is tight, so use Backup JSON to keep this imported board.');
+      alert('Names applied. Browser storage is tight, so use Backup JSON to keep this imported board.');
     }
   };
 
@@ -1031,6 +1031,583 @@ render();
   document.addEventListener('DOMContentLoaded',bindRandomEnter);
   setTimeout(bindRandomEnter,100);
   setTimeout(bindRandomEnter,700);
+})();
+</script>
+
+
+
+<script id="nova-v228-apply-names-auto-save">
+(function(){
+  function getS(){ try { if (typeof state !== 'undefined') return state; } catch(e){} return window.state || null; }
+  function saveAll(){
+    const s=getS();
+    try { if(s && typeof games !== 'undefined' && s.id) games[s.id]=JSON.parse(JSON.stringify(s)); } catch(e){}
+    try { if(typeof persist==='function') persist(); } catch(e){}
+    try { if(typeof novaLongSaveNow==='function') novaLongSaveNow(); } catch(e){}
+    try { if(typeof novaSafePersist==='function') novaSafePersist(); } catch(e){}
+  }
+  window.applyTrace=function(){
+    const s=getS();
+    if(!s || !s.picks){ alert('Board is not ready yet.'); return; }
+    if((!window.traceSnips && typeof traceSnips==='undefined') || (typeof traceSnips!=='undefined' && traceSnips.length!==100)){
+      try { if(typeof createTraceSnips==='function') createTraceSnips(); } catch(e){}
+    }
+    let snips=[];
+    try { snips=traceSnips || []; } catch(e){ snips=[]; }
+    if(!snips || snips.length!==100){ alert('Upload the board and create/apply the name cells first.'); return; }
+    for(let i=0;i<100;i++){
+      if(snips[i]) s.picks[i]={ name:'', paid:false, trace:snips[i] };
+    }
+    s.selected=[];
+    if(typeof render==='function') render();
+    saveAll();
+    const tm=document.getElementById('traceModal');
+    const nm=document.getElementById('newGameModal');
+    if(tm) tm.classList.add('hidden');
+    if(nm) nm.classList.add('hidden');
+    setTimeout(function(){ if(typeof render==='function') render(); },50);
+    alert('Names applied and saved.');
+  };
+  function cleanLabels(){
+    document.querySelectorAll('h2,label,p,button,.help').forEach(function(el){
+      if(!el || !el.textContent) return;
+      el.childNodes.forEach(function(n){
+        if(n.nodeType===3) n.nodeValue=n.nodeValue.replace(/Pretty Name Fill/g,'Name Fill').replace(/Apply Pretty Names/g,'Apply Names').replace(/Pretty names/g,'Names').replace(/pretty names/g,'names');
+      });
+    });
+    document.querySelectorAll('button').forEach(function(btn){
+      const t=(btn.textContent||'').trim();
+      if(t==='Apply Pretty Names') btn.textContent='Apply Names';
+    });
+  }
+  document.addEventListener('DOMContentLoaded',cleanLabels);
+  setTimeout(cleanLabels,100);
+  setTimeout(cleanLabels,700);
+})();
+</script>
+
+
+
+<script id="nova-v229-numbers-save-new-board">
+(function(){
+  const DB_NAME='pas_phone_cell_v211_db';
+  const DB_STORE='boards';
+  const CUR='current';
+  const ALL='games';
+
+  function getS(){ try { if (typeof state !== 'undefined') return state; } catch(e){} return window.state || null; }
+  function setS(obj){ try { state = obj; } catch(e){ window.state = obj; } }
+  function getG(){ try { if (typeof games !== 'undefined') return games || {}; } catch(e){} return window.games || {}; }
+  function setG(obj){ try { games = obj || {}; } catch(e){ window.games = obj || {}; } }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function shuffleNums(){ const a=[0,1,2,3,4,5,6,7,8,9]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a.map(String); }
+  function filledCount(s){ return (s && s.picks ? s.picks : []).filter(p=>p && (p.name || p.trace)).length; }
+
+  function openDB(){
+    return new Promise((resolve,reject)=>{
+      if(!window.indexedDB) return reject(new Error('IndexedDB unavailable'));
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=function(){ const db=req.result; if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE); };
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
+    });
+  }
+  async function idbSet(key,value){
+    const db=await openDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(DB_STORE,'readwrite');
+      tx.objectStore(DB_STORE).put(value,key);
+      tx.oncomplete=()=>{ db.close(); resolve(true); };
+      tx.onerror=()=>{ db.close(); reject(tx.error||new Error('IndexedDB write failed')); };
+    });
+  }
+
+  async function saveCompletedAndOpenBlank(completed){
+    const savedGames=getG() || {};
+    savedGames[completed.id]=clone(completed);
+    setG(savedGames);
+    try { await idbSet(ALL, clone(savedGames)); } catch(e) { try{ localStorage.setItem('pas_phone_cell_games_v23', JSON.stringify(savedGames)); }catch(_){} }
+
+    const blank = (typeof freshGame === 'function')
+      ? freshGame(completed.name || 'Pick-A-Square', completed.away || 'Away', completed.home || 'Home', Number(completed.price || 10))
+      : { id:'game_'+Date.now(), name:completed.name||'Pick-A-Square', away:completed.away||'Away', home:completed.home||'Home', price:Number(completed.price||10), date:new Date().toISOString().slice(0,10), top:Array(10).fill(''), side:Array(10).fill(''), picks:Array.from({length:100},()=>({name:'',paid:false,trace:''})), selected:[] };
+    blank.date = new Date().toISOString().slice(0,10);
+    blank.selected = [];
+    setS(blank);
+
+    const nameInput=document.getElementById('nameInput');
+    const randomCount=document.getElementById('randomCount');
+    if(nameInput) nameInput.value='';
+    if(randomCount) randomCount.value='';
+
+    if(typeof render==='function') render();
+    try { await idbSet(CUR, clone(blank)); } catch(e) {}
+    if(typeof renderGames==='function') renderGames();
+  }
+
+  window.generateNumbers = async function(){
+    const s=getS();
+    if(!s || !s.picks){ alert('Board is not ready yet.'); return; }
+    const filled=filledCount(s);
+    if(filled<100 && !confirm('Board is not full yet. Generate numbers anyway?')) return;
+    if(((s.top||[]).some(Boolean) || (s.side||[]).some(Boolean)) && !confirm('Numbers already exist. Regenerate?')) return;
+
+    s.top=shuffleNums();
+    s.side=shuffleNums();
+    s.selected=[];
+    if(typeof render==='function') render();
+
+    const completed=clone(s);
+    await saveCompletedAndOpenBlank(completed);
+  };
+
+  function bindNumbersButton(){
+    document.querySelectorAll('button').forEach(function(btn){
+      if((btn.textContent||'').trim().toLowerCase()==='numbers'){
+        btn.onclick=function(e){ e.preventDefault(); e.stopPropagation(); window.generateNumbers(); };
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded',bindNumbersButton);
+  setTimeout(bindNumbersButton,100);
+  setTimeout(bindNumbersButton,700);
+})();
+</script>
+
+
+
+<style id="nova-v230-game-contact-info-css">
+/* Nova v2.30: save game/contact info during grid import */
+.contactMeta{
+  margin-top:7px;
+  border:1px solid rgba(242,188,73,.58);
+  border-radius:15px;
+  padding:7px 8px;
+  background:rgba(8,0,14,.52);
+  color:#fff0b8;
+  font-size:11px;
+  font-weight:900;
+  line-height:1.22;
+  text-align:center;
+  word-break:break-word;
+}
+.contactMini{display:block;color:#f5e7ff;font-size:10.5px;margin-top:2px}
+</style>
+
+<script id="nova-v230-game-contact-info-fix">
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function getS(){ try { return state; } catch(e){ return window.state || null; } }
+  function getG(){ try { return games; } catch(e){ return window.games || {}; } }
+  function esc(s){ return String(s||'').replace(/[&<>\"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m];}); }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  function ensureContactObject(s){
+    if(!s) return null;
+    if(!s.contact) s.contact={};
+    s.contact.name = s.contact.name || s.contactName || '';
+    s.contact.phone = s.contact.phone || s.contactPhone || '';
+    s.contact.email = s.contact.email || s.contactEmail || '';
+    s.contact.notes = s.contact.notes || s.contactNotes || '';
+    s.contactName=s.contact.name; s.contactPhone=s.contact.phone; s.contactEmail=s.contact.email; s.contactNotes=s.contact.notes;
+    return s.contact;
+  }
+
+  function addField(grid,id,label,full){
+    if(!grid || byId(id)) return;
+    const wrap=document.createElement('div');
+    if(full) wrap.className='full';
+    const lab=document.createElement('label'); lab.textContent=label;
+    const inp=document.createElement('input'); inp.id=id;
+    if(id.toLowerCase().includes('phone')) inp.inputMode='tel';
+    if(id.toLowerCase().includes('email')) inp.type='email';
+    wrap.append(lab,inp);
+    grid.appendChild(wrap);
+  }
+
+  function ensureFields(){
+    const ng=byId('newGameModal')?.querySelector('.formGrid');
+    addField(ng,'newContactName','Contact / Board Owner',true);
+    addField(ng,'newContactPhone','Phone',false);
+    addField(ng,'newContactEmail','Email',false);
+    addField(ng,'newContactNotes','Notes',true);
+
+    const sg=byId('setupModal')?.querySelector('.formGrid');
+    addField(sg,'setupContactName','Contact / Board Owner',true);
+    addField(sg,'setupContactPhone','Phone',false);
+    addField(sg,'setupContactEmail','Email',false);
+    addField(sg,'setupContactNotes','Notes',true);
+  }
+
+  function readNewContact(){
+    return {
+      name:(byId('newContactName')?.value||'').trim(),
+      phone:(byId('newContactPhone')?.value||'').trim(),
+      email:(byId('newContactEmail')?.value||'').trim(),
+      notes:(byId('newContactNotes')?.value||'').trim()
+    };
+  }
+  function readSetupContact(){
+    return {
+      name:(byId('setupContactName')?.value||'').trim(),
+      phone:(byId('setupContactPhone')?.value||'').trim(),
+      email:(byId('setupContactEmail')?.value||'').trim(),
+      notes:(byId('setupContactNotes')?.value||'').trim()
+    };
+  }
+  function writeContactToState(s,c){
+    if(!s || !c) return;
+    s.contact={ name:c.name||'', phone:c.phone||'', email:c.email||'', notes:c.notes||'' };
+    s.contactName=s.contact.name; s.contactPhone=s.contact.phone; s.contactEmail=s.contact.email; s.contactNotes=s.contact.notes;
+  }
+  function fillSetupFields(){
+    ensureFields();
+    const s=getS(); const c=ensureContactObject(s)||{};
+    if(byId('setupContactName')) byId('setupContactName').value=c.name||'';
+    if(byId('setupContactPhone')) byId('setupContactPhone').value=c.phone||'';
+    if(byId('setupContactEmail')) byId('setupContactEmail').value=c.email||'';
+    if(byId('setupContactNotes')) byId('setupContactNotes').value=c.notes||'';
+  }
+  function fillNewFieldsFromCurrent(){
+    ensureFields();
+    const s=getS(); const c=ensureContactObject(s)||{};
+    if(byId('newContactName')) byId('newContactName').value=c.name||'';
+    if(byId('newContactPhone')) byId('newContactPhone').value=c.phone||'';
+    if(byId('newContactEmail')) byId('newContactEmail').value=c.email||'';
+    if(byId('newContactNotes')) byId('newContactNotes').value=c.notes||'';
+  }
+
+  async function saveDeep(show){
+    const s=getS(); if(!s) return;
+    ensureContactObject(s);
+    try { const g=getG()||{}; if(s.id) g[s.id]=clone(s); } catch(e){}
+    try { if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(!!show); else if(typeof saveCurrentGame==='function') await saveCurrentGame(!!show); else if(typeof persist==='function') persist(); } catch(e){ try{ if(typeof persist==='function') persist(); }catch(_){} }
+  }
+
+  const oldOpenNewGame=window.openNewGame;
+  window.openNewGame=function(){
+    ensureFields();
+    if(oldOpenNewGame) oldOpenNewGame();
+    fillNewFieldsFromCurrent();
+  };
+
+  const oldOpenSetup=window.openSetup;
+  window.openSetup=function(){
+    ensureFields();
+    if(oldOpenSetup) oldOpenSetup();
+    fillSetupFields();
+  };
+
+  window.createBlankGame=function(){
+    ensureFields();
+    const nm=(byId('newName')?.value||'Pick-A-Square Game').trim()||'Pick-A-Square Game';
+    const aw=(byId('newAway')?.value||'Away').trim()||'Away';
+    const hm=(byId('newHome')?.value||'Home').trim()||'Home';
+    const pr=Number(byId('newPrice')?.value)||10;
+    const dt=byId('newDate')?.value||new Date().toISOString().slice(0,10);
+    const c=readNewContact();
+    state=freshGame(nm,aw,hm,pr);
+    state.date=dt;
+    writeContactToState(state,c);
+    try { traceSnips=[]; } catch(e){}
+    if(typeof render==='function') render();
+    saveDeep(false);
+    const modal=byId('newGameModal'); if(modal) modal.classList.add('hidden');
+  };
+
+  window.createThenTrace=function(){
+    window.createBlankGame();
+    setTimeout(function(){ if(typeof openTraceTool==='function') openTraceTool(); },150);
+  };
+
+  window.saveSetup=function(){
+    ensureFields();
+    const s=getS(); if(!s) return;
+    s.name=(byId('setupName')?.value||s.name||'Pick-A-Square').trim()||s.name;
+    s.away=(byId('setupAway')?.value||s.away||'Away').trim()||s.away;
+    s.home=(byId('setupHome')?.value||s.home||'Home').trim()||s.home;
+    s.price=Number(byId('setupPrice')?.value)||s.price||10;
+    s.date=byId('setupDate')?.value||s.date||new Date().toISOString().slice(0,10);
+    writeContactToState(s,readSetupContact());
+    const modal=byId('setupModal'); if(modal) modal.classList.add('hidden');
+    if(typeof render==='function') render();
+    saveDeep(false);
+  };
+
+  const oldApplyTrace=window.applyTrace;
+  window.applyTrace=async function(){
+    ensureFields();
+    const s=getS();
+    // If the import modal is still open, capture the game/contact fields before applying the grid.
+    if(s && !byId('newGameModal')?.classList.contains('hidden')){
+      s.name=(byId('newName')?.value||s.name||'Pick-A-Square').trim()||s.name;
+      s.away=(byId('newAway')?.value||s.away||'Away').trim()||s.away;
+      s.home=(byId('newHome')?.value||s.home||'Home').trim()||s.home;
+      s.price=Number(byId('newPrice')?.value)||s.price||10;
+      s.date=byId('newDate')?.value||s.date||new Date().toISOString().slice(0,10);
+      writeContactToState(s,readNewContact());
+    }
+    if(oldApplyTrace) await oldApplyTrace();
+    const after=getS(); if(after) ensureContactObject(after);
+    if(typeof render==='function') render();
+    await saveDeep(false);
+  };
+
+  function updateContactMeta(){
+    const s=getS(); if(!s) return;
+    const c=ensureContactObject(s)||{};
+    const head=document.querySelector('.gameHead'); if(!head) return;
+    let box=byId('contactMeta');
+    if(!box){ box=document.createElement('div'); box.id='contactMeta'; box.className='contactMeta'; head.insertAdjacentElement('afterend',box); }
+    const line1=[c.name,c.phone,c.email].filter(Boolean).join(' • ');
+    const line2=c.notes||'';
+    if(!line1 && !line2){ box.style.display='none'; return; }
+    box.style.display='block';
+    box.innerHTML=(line1?esc(line1):'')+(line2?'<span class="contactMini">'+esc(line2)+'</span>':'');
+  }
+
+  const oldRender=window.render;
+  if(oldRender){
+    window.render=function(){ oldRender(); updateContactMeta(); };
+  }
+
+  const oldRenderGames=window.renderGames;
+  window.renderGames=function(){
+    const list=byId('gameList');
+    const g=getG()||{};
+    if(!list || !Object.keys(g).length){ if(oldRenderGames) return oldRenderGames(); return; }
+    list.innerHTML='';
+    Object.values(g).sort((a,b)=>(b.id||'').localeCompare(a.id||'')).forEach(function(game){
+      const c=ensureContactObject(game)||{};
+      const filled=(game.picks||[]).filter(function(p){return p&&(p.name||p.trace);}).length;
+      const div=document.createElement('div'); div.className='gameItem';
+      const contact=[c.name,c.phone,c.email].filter(Boolean).join(' • ');
+      div.innerHTML='<b>'+esc(game.name||'Pick-A-Square')+'</b><span>'+esc(game.away||'Away')+' vs '+esc(game.home||'Home')+' • '+filled+'/100</span>'+(contact?'<span class="contactMini">'+esc(contact)+'</span>':'');
+      const row=document.createElement('div'); row.className='row';
+      const open=document.createElement('button'); open.className='small green'; open.textContent='Open';
+      open.onclick=function(){ state=clone(game); const modal=byId('gamesModal'); if(modal) modal.classList.add('hidden'); if(typeof render==='function') render(); saveDeep(false); };
+      const del=document.createElement('button'); del.className='small hot'; del.textContent='Delete';
+      del.onclick=function(){ if(confirm('Delete this game?')){ delete g[game.id]; try{ games=g; }catch(e){ window.games=g; } saveDeep(false); window.renderGames(); } };
+      row.append(open,del); div.append(row); list.append(div);
+    });
+  };
+
+  // Preserve contact info when Numbers saves the completed board and opens a blank board.
+  const oldGenerateNumbers=window.generateNumbers;
+  if(oldGenerateNumbers){
+    window.generateNumbers=async function(){
+      const before=getS(); const contact=before ? clone(ensureContactObject(before)||{}) : {};
+      await oldGenerateNumbers();
+      const after=getS(); if(after){ writeContactToState(after,contact); if(typeof render==='function') render(); await saveDeep(false); }
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){ ensureFields(); updateContactMeta(); });
+  setTimeout(function(){ ensureFields(); updateContactMeta(); },250);
+  setTimeout(function(){ ensureFields(); updateContactMeta(); },900);
+})();
+</script>
+
+
+
+<script id="nova-v231-numbers-preserve-imported-board">
+(function(){
+  const DB_NAME='pas_phone_cell_v211_db';
+  const DB_STORE='boards';
+  const CUR='current';
+  const ALL='games';
+
+  function getS(){ try { if(typeof state !== 'undefined') return state; } catch(e){} return window.state || null; }
+  function setS(v){ try { state=v; } catch(e){ window.state=v; } }
+  function getG(){ try { if(typeof games !== 'undefined') return games || {}; } catch(e){} return window.games || {}; }
+  function setG(v){ try { games=v || {}; } catch(e){ window.games=v || {}; } }
+  function clone(v){ return JSON.parse(JSON.stringify(v)); }
+  function hasFilled(p){ return !!(p && (p.name || p.trace)); }
+  function shuffleNums(){ const a=['0','1','2','3','4','5','6','7','8','9']; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function openDB(){
+    return new Promise(function(resolve,reject){
+      if(!window.indexedDB) return reject(new Error('IndexedDB unavailable'));
+      const req=indexedDB.open(DB_NAME,1);
+      req.onupgradeneeded=function(){ const db=req.result; if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE); };
+      req.onsuccess=function(){ resolve(req.result); };
+      req.onerror=function(){ reject(req.error || new Error('IndexedDB open failed')); };
+    });
+  }
+  async function idbSet(key,value){
+    const db=await openDB();
+    return new Promise(function(resolve,reject){
+      const tx=db.transaction(DB_STORE,'readwrite');
+      tx.objectStore(DB_STORE).put(value,key);
+      tx.oncomplete=function(){ db.close(); resolve(true); };
+      tx.onerror=function(){ db.close(); reject(tx.error || new Error('IndexedDB write failed')); };
+    });
+  }
+  async function storeCurrentAndGames(current,allGames){
+    try { await idbSet(ALL, clone(allGames)); } catch(e) { try { localStorage.setItem('pas_phone_cell_games_v23', JSON.stringify(allGames)); } catch(_){} }
+    try { await idbSet(CUR, clone(current)); } catch(e) { try { localStorage.setItem('pas_phone_cell_v23_pretty', JSON.stringify(current)); } catch(_){} }
+  }
+  function carryContact(from,to){
+    if(!from || !to) return;
+    const c = from.contact || { name:from.contactName||'', phone:from.contactPhone||'', email:from.contactEmail||'', notes:from.contactNotes||'' };
+    to.contact={ name:c.name||'', phone:c.phone||'', email:c.email||'', notes:c.notes||'' };
+    to.contactName=to.contact.name; to.contactPhone=to.contact.phone; to.contactEmail=to.contact.email; to.contactNotes=to.contact.notes;
+  }
+  function makeBlankFrom(completed){
+    let blank;
+    if(typeof freshGame === 'function') blank = freshGame(completed.name || 'Pick-A-Square', completed.away || 'Away', completed.home || 'Home', Number(completed.price || 10));
+    else blank = { id:'game_'+Date.now(), name:completed.name||'Pick-A-Square', away:completed.away||'Away', home:completed.home||'Home', price:Number(completed.price||10), date:new Date().toISOString().slice(0,10), top:Array(10).fill(''), side:Array(10).fill(''), picks:Array.from({length:100},()=>({name:'',paid:false,trace:''})), selected:[] };
+    blank.id = 'game_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    blank.date = new Date().toISOString().slice(0,10);
+    blank.top = Array(10).fill('');
+    blank.side = Array(10).fill('');
+    blank.picks = Array.from({length:100},()=>({name:'',paid:false,trace:''}));
+    blank.selected=[];
+    carryContact(completed, blank);
+    return blank;
+  }
+
+  window.generateNumbers = async function(){
+    const s=getS();
+    if(!s || !Array.isArray(s.picks)){ alert('Board is not ready yet.'); return; }
+    const filled=s.picks.filter(hasFilled).length;
+    if(filled<100 && !confirm('Board is not full yet. Generate numbers anyway?')) return;
+    if(((s.top||[]).some(Boolean) || (s.side||[]).some(Boolean)) && !confirm('Numbers already exist. Regenerate?')) return;
+
+    // Important: clone the imported board first so imported image/name cells cannot be cleared.
+    const completed=clone(s);
+    completed.top=shuffleNums();
+    completed.side=shuffleNums();
+    completed.selected=[];
+    if(!completed.id) completed.id='game_'+Date.now();
+
+    const allGames=getG() || {};
+    allGames[completed.id]=clone(completed);
+    setG(allGames);
+
+    const blank=makeBlankFrom(completed);
+    setS(blank);
+
+    const nameInput=document.getElementById('nameInput');
+    const randomCount=document.getElementById('randomCount');
+    if(nameInput) nameInput.value='';
+    if(randomCount) randomCount.value='';
+
+    await storeCurrentAndGames(blank, allGames);
+    if(typeof render==='function') render();
+    if(typeof renderGames==='function') renderGames();
+    alert('Completed board saved. New blank board opened.');
+  };
+
+  function bindNumbers(){
+    document.querySelectorAll('button').forEach(function(btn){
+      if((btn.textContent||'').trim().toLowerCase()==='numbers'){
+        btn.onclick=function(e){ e.preventDefault(); e.stopPropagation(); window.generateNumbers(); };
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded',bindNumbers);
+  setTimeout(bindNumbers,100);
+  setTimeout(bindNumbers,700);
+  setTimeout(bindNumbers,1400);
+})();
+</script>
+
+
+
+<script id="nova-v232-multi-document-import-save">
+(function(){
+  function byId(id){ return document.getElementById(id); }
+  function getS(){ try { if(typeof state !== 'undefined') return state; } catch(e){} return window.state || null; }
+  function setS(v){ try { state = v; } catch(e){ window.state = v; } }
+  function getG(){ try { if(typeof games !== 'undefined') return games || {}; } catch(e){} return window.games || {}; }
+  function setG(v){ try { games = v || {}; } catch(e){ window.games = v || {}; } }
+  function clone(v){ return JSON.parse(JSON.stringify(v)); }
+  function hasBoardContent(s){ return !!(s && Array.isArray(s.picks) && (s.picks.some(function(p){ return p && (p.name || p.trace); }) || (s.top||[]).some(Boolean) || (s.side||[]).some(Boolean))); }
+  function uniqueId(){ return 'game_' + Date.now() + '_' + Math.floor(Math.random()*100000); }
+  function readNewContact(){
+    return {
+      name:(byId('newContactName')?.value||'').trim(),
+      phone:(byId('newContactPhone')?.value||'').trim(),
+      email:(byId('newContactEmail')?.value||'').trim(),
+      notes:(byId('newContactNotes')?.value||'').trim()
+    };
+  }
+  function writeContact(s,c){
+    if(!s) return;
+    c = c || {};
+    s.contact = { name:c.name||'', phone:c.phone||'', email:c.email||'', notes:c.notes||'' };
+    s.contactName=s.contact.name; s.contactPhone=s.contact.phone; s.contactEmail=s.contact.email; s.contactNotes=s.contact.notes;
+  }
+  function makeImportBoard(){
+    const nm=(byId('newName')?.value||'Pick-A-Square Game').trim()||'Pick-A-Square Game';
+    const aw=(byId('newAway')?.value||'Away').trim()||'Away';
+    const hm=(byId('newHome')?.value||'Home').trim()||'Home';
+    const pr=Number(byId('newPrice')?.value)||10;
+    const dt=byId('newDate')?.value||new Date().toISOString().slice(0,10);
+    let board;
+    if(typeof freshGame === 'function') board = freshGame(nm,aw,hm,pr);
+    else board = {name:nm,away:aw,home:hm,price:pr,top:Array(10).fill(''),side:Array(10).fill(''),picks:Array.from({length:100},function(){return {name:'',paid:false,trace:''};}),selected:[]};
+    board.id = uniqueId();
+    board.date = dt;
+    board.top = Array(10).fill('');
+    board.side = Array(10).fill('');
+    board.picks = Array.from({length:100},function(){ return {name:'',paid:false,trace:''}; });
+    board.selected = [];
+    writeContact(board, readNewContact());
+    return board;
+  }
+  async function saveAll(current, allGames){
+    setS(current); setG(allGames);
+    try { if(typeof novaSaveBoardNow === 'function') await novaSaveBoardNow(false); }
+    catch(e){ try { if(typeof persist === 'function') persist(); } catch(_){} }
+    try { if(typeof renderGames === 'function') renderGames(); } catch(e){}
+  }
+  function resetImportPicker(){
+    const input=byId('filledDocInput');
+    if(input) input.value='';
+    const preview=byId('filledPreview');
+    if(preview){ preview.removeAttribute('src'); preview.style.display='none'; }
+    try { traceImage=null; traceSnips=[]; } catch(e){}
+    const mini=byId('traceMini'); if(mini) mini.innerHTML='';
+    const status=byId('traceStatus'); if(status) status.textContent='Ready for next document.';
+  }
+
+  const oldOpenNewGame = window.openNewGame;
+  window.openNewGame = function(){
+    if(oldOpenNewGame) oldOpenNewGame();
+    resetImportPicker();
+  };
+
+  window.applyTrace = async function(){
+    if(!window.traceSnips && typeof traceSnips === 'undefined') { alert('Create trace cells first.'); return; }
+    const snips = (typeof traceSnips !== 'undefined') ? traceSnips : window.traceSnips;
+    if(!snips || snips.length !== 100){ alert('Create trace cells first.'); return; }
+
+    const prior = getS();
+    const allGames = getG() || {};
+
+    // Save the currently visible/imported board before starting the next imported document.
+    if(hasBoardContent(prior)){
+      if(!prior.id) prior.id = uniqueId();
+      allGames[prior.id] = clone(prior);
+    }
+
+    // Every imported document becomes its own saved board instead of replacing the prior upload.
+    const imported = makeImportBoard();
+    for(let i=0;i<100;i++){
+      imported.picks[i] = { name:'', paid:false, trace:snips[i] };
+    }
+    allGames[imported.id] = clone(imported);
+
+    await saveAll(imported, allGames);
+    resetImportPicker();
+
+    const tm=byId('traceModal'), nm=byId('newGameModal');
+    if(tm) tm.classList.add('hidden');
+    if(nm) nm.classList.add('hidden');
+    if(typeof render === 'function') render();
+    alert('Imported board saved as a new board. You can upload another document now.');
+  };
 })();
 </script>
 
