@@ -177,7 +177,7 @@ body > .footerCopyright { display: none !important; }
 <div id="traceModal" class="modal hidden"><div class="sheet"><h2>Name Fill</h2><p>Drag the four gold corner dots onto the inside corners of the 10×10 name grid. Then tap Apply Names to populate and save the board.</p><div id="traceBox" class="traceBox"><canvas id="traceCanvas" class="traceCanvas" width="900" height="640"></canvas><div class="cornerDot" id="dotTL" data-dot="tl"></div><div class="cornerDot" id="dotTR" data-dot="tr"></div><div class="cornerDot" id="dotBR" data-dot="br"></div><div class="cornerDot" id="dotBL" data-dot="bl"></div></div><div class="actionsRow"><button class="green" onclick="createTraceSnips()">Create Trace</button><button class="gold" onclick="applyTrace()">Apply Names</button></div><div class="actionsRow"><button class="dark" onclick="closeModal('traceModal')">Close</button><button class="hot" onclick="clearTrace()">Clear Trace</button></div><div id="traceStatus" class="help">Ready.</div><div id="traceMini" class="traceMini"></div></div></div>
 
 <div id="tutorialModal" class="modal hidden"><div class="sheet"><h2>How to Play</h2><p>Pick squares manually or use Name Fill under New Game to import a completed paper board.</p><div class="actionsRow"><button class="green" onclick="closeTutorial()">Start</button><button class="gold" onclick="closeModal('tutorialModal')">Close</button></div></div></div>
-<div id="gamesModal" class="modal hidden"><div class="sheet"><h2>Games</h2><div id="gameList" class="gameList"></div><div class="actionsRow"><button class="green" onclick="saveCurrentGame()">Save Current</button><button class="gold" onclick="closeModal('gamesModal')">Close</button></div><div class="actionsRow"><button class="dark" onclick="backupJSON()">Backup JSON</button><button class="dark" onclick="restoreInput.click()">Restore JSON</button></div><input id="restoreInput" class="hidden" type="file" accept="application/json" onchange="restoreJSON(event)"></div></div>
+<div id="gamesModal" class="modal hidden"><div class="sheet"><h2>Games</h2><div id="gameList" class="gameList"></div><div class="actionsRow"><button class="green" onclick="saveCurrentGame()">Save Current</button><button class="gold" onclick="closeModal('gamesModal')">Close</button></div></div></div>
 
 <script>
 const STORE='pas_phone_cell_v23_pretty';
@@ -187,7 +187,7 @@ let games=JSON.parse(localStorage.getItem(GAMES)||'{}');
 let traceImage=null, traceSnips=[];
 let dots={tl:{x:.08,y:.08},tr:{x:.92,y:.08},br:{x:.92,y:.92},bl:{x:.08,y:.92}};
 function freshGame(name,away,home,price){return {id:'game_'+Date.now(),name:name||'Pick-A-Square',away:away||'Away',home:home||'Home',price:Number(price)||10,date:new Date().toISOString().slice(0,10),top:Array(10).fill(''),side:Array(10).fill(''),picks:Array.from({length:100},()=>({name:'',paid:false,trace:''})),selected:[]}}
-function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));localStorage.setItem(GAMES,JSON.stringify(games))}catch(e){alert('Saved board is large. Use Backup JSON after importing.')}}
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(state));localStorage.setItem(GAMES,JSON.stringify(games))}catch(e){alert('Saved board is large. Board is still active on this phone.')}}
 function closeModal(id){document.getElementById(id).classList.add('hidden')}
 function openNewGame(){newDate.value=new Date().toISOString().slice(0,10);newGameModal.classList.remove('hidden')}
 function openSetup(){setupName.value=state.name;setupAway.value=state.away;setupHome.value=state.home;setupPrice.value=state.price;setupDate.value=state.date;setupModal.classList.remove('hidden')}
@@ -231,8 +231,6 @@ function clearTrace(){state.picks.forEach(p=>p.trace='');render();persist()}
 function downloadPNG(){const canvas=document.createElement('canvas');const W=1400,H=1700;canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');ctx.fillStyle='#120018';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='bold 60px Arial';ctx.textAlign='center';ctx.fillText(state.name,W/2,80);const margin=40,gap=6,size=(W-margin*2-gap*10)/11;let y=130;[...board.children].forEach((el,idx)=>{const r=Math.floor(idx/11),c=idx%11,x=margin+c*(size+gap),yy=y+r*(size+gap);const isHead=el.classList.contains('head')||el.classList.contains('side')||el.classList.contains('corner');ctx.fillStyle=isHead?'#5a1d91':'#f6f2fb';ctx.strokeStyle='#7d35a8';ctx.lineWidth=2;roundRect(ctx,x,yy,size,size,12,true,true);ctx.fillStyle=isHead?'#fff0b8':'#1b1022';ctx.font='bold '+(isHead?20:18)+'px Arial';const txt=el.textContent.replace('✓','').trim();wrapText(ctx,txt,x+size/2,yy+size/2-8,size-6,18)});ctx.fillStyle='#e8d9fb';ctx.font='24px Arial';ctx.fillText('© 2026 SRL - S.R.Langlois • Pick-A-Square',W/2,H-40);canvas.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(state.name||'pick-a-square')+'.png';a.click()})}
 function roundRect(ctx,x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke()}
 function wrapText(ctx,text,x,y,maxWidth,lineHeight){if(!text)return;const words=text.split(/\s+/);let line='',lines=[];for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}lines.push(line);const start=y-(lines.length-1)*lineHeight/2;lines.forEach((l,i)=>ctx.fillText(l,x,start+i*lineHeight))}
-function backupJSON(){const blob=new Blob([JSON.stringify({state,games},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pick-a-square-backup.json';a.click()}
-function restoreJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const data=JSON.parse(r.result);state=data.state||state;games=data.games||games;persist();render();alert('Restored')};r.readAsText(f)}
 if(!localStorage.getItem('pas_phone_cell_v23_seen'))setTimeout(openTutorial,300);
 render();
 </script>
@@ -360,7 +358,7 @@ render();
     if(saved){
       alert('Names applied and saved.');
     } else {
-      alert('Names applied. Browser storage is tight, so use Backup JSON to keep this imported board.');
+      alert('Names applied. Browser storage is tight, but the board is still active on this phone.');
     }
   };
 
@@ -639,7 +637,7 @@ render();
   window.novaSaveBoardNow = async function(showAlert){
     const saved=await saveToIndexedDB();
     if(typeof renderGames==='function') renderGames();
-    if(showAlert) alert(saved ? 'Board saved.' : 'Board is saved on screen. Use Backup JSON after this board.');
+    if(showAlert) alert(saved ? 'Board saved.' : 'Board is saved on screen.');
     return saved;
   };
 
@@ -2274,6 +2272,126 @@ render();
   setTimeout(function(){ bindBoard(); bindInput(); removePopups(); },900);
 })();
 </script>
+
+
+
+<style id="nova-v237-games-export-first-open-css">
+/* Nova v2.37: exports moved into saved-board cards + first-open tutorial only */
+.topBtns button[data-nova-home-export="1"]{display:none!important}
+.gameItem .novaBoardActions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:8px}
+.gameItem .novaBoardActions button{font-size:13px;padding:8px 8px;border-radius:14px}
+</style>
+<script id="nova-v237-games-export-first-open-js">
+(function(){
+  const SEEN_KEY='pas_phone_cell_v237_seen_tutorial';
+  const OLD_SEEN_KEY='pas_phone_cell_v23_seen';
+  function byId(id){ return document.getElementById(id); }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function escTxt(s){ return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+  function getGamesObj(){ try{ if(typeof games!=='undefined') return games || {}; }catch(e){} return window.games || {}; }
+  function currentLogoSrc(){ const im=document.querySelector('.logoImg,.miniLogo'); return im ? im.src : ''; }
+  function loadImg(src){ return new Promise(resolve=>{ if(!src) return resolve(null); const im=new Image(); im.onload=()=>resolve(im); im.onerror=()=>resolve(null); im.src=src; }); }
+  function colorForName(name){ if(window.novaNameColor) return window.novaNameColor(name); const colors=[['#7c2fd8','#35105d'],['#0ea84a','#086334'],['#d946ef','#7e1f99'],['#2563eb','#123a91'],['#f97316','#9a3412'],['#dc2626','#7f1d1d'],['#14b8a6','#0f766e'],['#eab308','#a16207'],['#ec4899','#9d174d'],['#8b5cf6','#4c1d95']]; let h=0; name=String(name||'').toLowerCase(); for(let i=0;i<name.length;i++) h=((h<<5)-h+name.charCodeAt(i))|0; return colors[Math.abs(h)%colors.length]; }
+  function rr(ctx,x,y,w,h,r,fill,stroke){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill)ctx.fill(); if(stroke)ctx.stroke(); }
+  function fit(ctx,text,w,size,min){ ctx.font='900 '+size+'px Arial'; while(size>min && ctx.measureText(text).width>w){ size--; ctx.font='900 '+size+'px Arial'; } return size; }
+  function drawText(ctx,text,x,y,w,h,color,max){ text=String(text||'').trim(); if(!text)return; ctx.save(); ctx.fillStyle=color; ctx.textAlign='center'; ctx.textBaseline='middle'; let words=text.split(/\s+/), lines=[text]; ctx.font='900 '+max+'px Arial'; if(ctx.measureText(text).width>w-10 && words.length>1){ const mid=Math.ceil(words.length/2); lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')]; } const longest=lines.reduce((a,b)=>a.length>b.length?a:b,''); const size=fit(ctx,longest,w-10,max,8); ctx.font='900 '+size+'px Arial'; const lh=size*1.05, sy=y+h/2-((lines.length-1)*lh/2); lines.forEach((line,i)=>ctx.fillText(line,x+w/2,sy+i*lh)); ctx.restore(); }
+  async function boardCanvasFor(g){
+    const s=clone(g||{}); if(!s || !Array.isArray(s.picks)) return null;
+    const W=1400,H=1720,canvas=document.createElement('canvas'); canvas.width=W; canvas.height=H; const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#120018'; ctx.fillRect(0,0,W,H);
+    const logo=await loadImg(currentLogoSrc()); if(logo) ctx.drawImage(logo,46,32,96,96);
+    ctx.fillStyle='#fff7ff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='900 58px Arial'; ctx.fillText(s.name||'Pick-A-Square',W/2,66);
+    const filled=s.picks.filter(p=>p && (p.name||p.trace)).length; ctx.fillStyle='#fff0b8'; ctx.font='900 28px Arial'; ctx.fillText((s.away||'Away')+' vs '+(s.home||'Home')+' • $'+(s.price||0)+'/square • '+filled+'/100 filled',W/2,113);
+    const margin=42,gap=7,size=(W-margin*2-gap*10)/11,y0=155;
+    for(let r=0;r<11;r++) for(let c=0;c<11;c++){
+      const x=margin+c*(size+gap), y=y0+r*(size+gap), head=(r===0||c===0); ctx.strokeStyle='#7d35a8'; ctx.lineWidth=2;
+      if(head){ ctx.fillStyle=(r===0&&c===0)?'#f4b325':'#5a1d91'; rr(ctx,x,y,size,size,12,true,true); const label=(r===0&&c===0)?'PICK A SQUARE':(r===0?((s.top||[])[c-1]||'TOP'):((s.side||[])[r-1]||'SIDE')); drawText(ctx,label,x,y,size,size,(r===0&&c===0)?'#160606':'#fff0b8',21); }
+      else { const idx=(r-1)*10+(c-1), p=(s.picks||[])[idx]||{}; if(p.name&&!p.trace){ const pair=colorForName(p.name), grad=ctx.createLinearGradient(x,y,x,y+size); grad.addColorStop(0,pair[0]); grad.addColorStop(1,pair[1]); ctx.fillStyle=grad; } else ctx.fillStyle='#f6f2fb'; rr(ctx,x,y,size,size,12,true,true); if(p.trace){ const im=await loadImg(p.trace); if(im){ ctx.fillStyle='#fff'; ctx.fillRect(x+5,y+8,size-10,size-16); ctx.filter='contrast(1.55) brightness(.82) saturate(.65)'; ctx.drawImage(im,x+5,y+10,size-10,size-20); ctx.filter='none'; } } else if(p.name) drawText(ctx,p.name,x,y,size,size,'#fff',23); if(p.paid&&p.name&&!p.trace){ ctx.fillStyle='#21c25d'; ctx.beginPath(); ctx.arc(x+size-14,y+14,12,0,Math.PI*2); ctx.fill(); ctx.fillStyle='white'; ctx.font='900 16px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('✓',x+size-14,y+15); } }
+    }
+    ctx.fillStyle='#fff0b8'; ctx.font='900 24px Arial'; ctx.textAlign='center'; ctx.fillText('© 2026 SRL - S.R.Langlois • Pick-A-Square',W/2,H-42);
+    return canvas;
+  }
+  window.novaDownloadSavedBoardPNG=async function(id){
+    const g=(getGamesObj()||{})[id]; if(!g){ alert('Saved board not found.'); return; }
+    const canvas=await boardCanvasFor(g); if(!canvas){ alert('PNG export could not be created.'); return; }
+    canvas.toBlob(function(blob){ if(!blob){ alert('PNG export could not be created.'); return; } const a=document.createElement('a'); const url=URL.createObjectURL(blob); a.href=url; a.download=((g.name||'pick-a-square').replace(/[^a-z0-9]+/gi,'-')||'pick-a-square')+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000); },'image/png');
+  };
+  window.novaPrintSavedBoard=async function(id){
+    const g=(getGamesObj()||{})[id]; if(!g){ alert('Saved board not found.'); return; }
+    const canvas=await boardCanvasFor(g); if(!canvas){ window.print(); return; }
+    const data=canvas.toDataURL('image/png'); const frame=document.createElement('iframe'); frame.style.cssText='position:fixed;left:-10000px;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none'; document.body.appendChild(frame); const d=frame.contentDocument||frame.contentWindow.document; d.open(); d.write('<!doctype html><html><head><title>Pick-A-Square Print</title><style>@page{size:portrait;margin:.25in}html,body{margin:0;background:#fff;text-align:center}img{max-width:100%;max-height:99vh;object-fit:contain}</style></head><body><img id="boardImg" src="'+data+'"></body></html>'); d.close(); const img=d.getElementById('boardImg'); img.onload=function(){ setTimeout(function(){ try{ frame.contentWindow.focus(); frame.contentWindow.print(); }catch(e){ window.print(); } setTimeout(function(){ frame.remove(); },1000); },250); };
+  };
+  function hideHomeExportButtons(){
+    document.querySelectorAll('.topBtns button').forEach(function(btn){ const t=(btn.textContent||'').trim().toLowerCase(); if(t==='download png' || t==='print'){ btn.dataset.novaHomeExport='1'; } });
+  }
+  function bindTutorial(){
+    const modal=byId('tutorialModal');
+    const oldOpen=window.openTutorial;
+    window.openTutorial=function(force){
+      if(force===true){ if(modal) modal.classList.remove('hidden'); return; }
+      if(localStorage.getItem(SEEN_KEY) || localStorage.getItem(OLD_SEEN_KEY)) return;
+      localStorage.setItem(SEEN_KEY,'yes'); localStorage.setItem(OLD_SEEN_KEY,'yes');
+      if(modal) modal.classList.remove('hidden'); else if(oldOpen) oldOpen();
+    };
+    const oldClose=window.closeTutorial;
+    window.closeTutorial=function(){ localStorage.setItem(SEEN_KEY,'yes'); localStorage.setItem(OLD_SEEN_KEY,'yes'); if(oldClose) oldClose(); else if(modal) modal.classList.add('hidden'); };
+    document.querySelectorAll('button').forEach(function(btn){ if((btn.textContent||'').trim().toLowerCase()==='tutorial'){ btn.onclick=function(e){ e.preventDefault(); window.openTutorial(true); }; } });
+    if(modal && modal.dataset.novaSeenPatch!=='1'){
+      modal.dataset.novaSeenPatch='1';
+      modal.addEventListener('click',function(e){ const b=e.target && e.target.closest ? e.target.closest('button') : null; if(b){ const txt=(b.textContent||'').trim().toLowerCase(); if(txt==='close' || txt==='start'){ localStorage.setItem(SEEN_KEY,'yes'); localStorage.setItem(OLD_SEEN_KEY,'yes'); } } },true);
+    }
+  }
+  function renderGamesV37(){
+    const list=byId('gameList'); if(!list) return;
+    const all=getGamesObj()||{};
+    const vals=Object.values(all).sort(function(a,b){ return String(b.__novaCompletedAt||b.id||'').localeCompare(String(a.__novaCompletedAt||a.id||'')); });
+    list.innerHTML='';
+    const tools=document.createElement('div'); tools.className='savedDeleteTools';
+    const delBlanks=document.createElement('button'); delBlanks.className='small hot'; delBlanks.textContent='Delete Blank Old Boards'; delBlanks.onclick=function(e){ e.preventDefault(); if(window.novaDeleteBlankOldBoards) window.novaDeleteBlankOldBoards(); };
+    const delAll=document.createElement('button'); delAll.className='small dark'; delAll.textContent='Delete All Saved'; delAll.onclick=function(e){ e.preventDefault(); if(window.novaDeleteAllSavedBoards) window.novaDeleteAllSavedBoards(); };
+    tools.append(delBlanks,delAll); list.append(tools);
+    if(!vals.length){ const p=document.createElement('p'); p.textContent='No saved boards yet.'; list.append(p); return; }
+    vals.forEach(function(g){
+      const filled=Array.isArray(g.picks)?g.picks.filter(function(p){return p&&(p.name||p.trace);}).length:0;
+      const numbered=((g.top||[]).some(Boolean)||(g.side||[]).some(Boolean));
+      const div=document.createElement('div'); div.className='gameItem';
+      div.innerHTML='<b>'+escTxt(g.name||'Saved Board')+'</b><span>'+escTxt(g.away||'Away')+' vs '+escTxt(g.home||'Home')+' • '+filled+'/100'+(numbered?' • Numbered':'')+'</span>';
+      const row=document.createElement('div'); row.className='novaBoardActions';
+      const open=document.createElement('button'); open.className='small green'; open.textContent='Open'; open.onclick=async function(){ try{ state=clone(g); }catch(e){ window.state=clone(g); } try{ if(window.idbSet && typeof CUR!=='undefined') await idbSet(CUR,clone(g)); }catch(e){} const m=byId('gamesModal'); if(m) m.classList.add('hidden'); if(typeof render==='function') render(); };
+      const png=document.createElement('button'); png.className='small gold'; png.textContent='PNG'; png.onclick=function(e){ e.preventDefault(); e.stopPropagation(); window.novaDownloadSavedBoardPNG(g.id); };
+      const print=document.createElement('button'); print.className='small dark'; print.textContent='Print'; print.onclick=function(e){ e.preventDefault(); e.stopPropagation(); window.novaPrintSavedBoard(g.id); };
+      const del=document.createElement('button'); del.className='small hot'; del.textContent='Delete'; del.onclick=function(e){ e.preventDefault(); e.stopPropagation(); if(window.novaDeleteSavedBoard) window.novaDeleteSavedBoard(g.id); };
+      row.append(open,png,print,del); div.append(row); list.append(div);
+    });
+  }
+  window.renderGames=renderGamesV37;
+  function bindGames(){ document.querySelectorAll('button').forEach(function(btn){ if((btn.textContent||'').trim().toLowerCase()==='games'){ btn.onclick=function(e){ e.preventDefault(); renderGamesV37(); const m=byId('gamesModal'); if(m) m.classList.remove('hidden'); }; } }); }
+  document.addEventListener('DOMContentLoaded',function(){ hideHomeExportButtons(); bindTutorial(); bindGames(); });
+  hideHomeExportButtons(); bindTutorial(); bindGames();
+  setTimeout(function(){ hideHomeExportButtons(); bindTutorial(); bindGames(); if(byId('gamesModal') && !byId('gamesModal').classList.contains('hidden')) renderGamesV37(); },200);
+  setTimeout(function(){ hideHomeExportButtons(); bindTutorial(); bindGames(); },800);
+})();
+</script>
+
+
+
+<style id="nova-v239-games-buttons-one-row-css">
+/* Nova v2.39: keep saved-board Open / PNG / Print / Delete buttons in one row on phone */
+.gameItem .novaBoardActions{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+  align-items:stretch!important;
+}
+.gameItem .novaBoardActions button{
+  min-width:0!important;
+  width:100%!important;
+  font-size:clamp(10px,3.15vw,13px)!important;
+  padding:8px 4px!important;
+  border-radius:14px!important;
+  white-space:nowrap!important;
+}
+</style>
 
 </body>
 </html>
