@@ -2575,6 +2575,120 @@ render();
 })();
 </script>
 
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
+})();
+</script>
+
 </body></html>');
       w.document.close();
       return;
@@ -2665,6 +2779,120 @@ render();
   setTimeout(bind, 100);
   setTimeout(bind, 700);
   setTimeout(bind, 1500);
+})();
+</script>
+
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
 })();
 </script>
 
@@ -2784,6 +3012,120 @@ render();
   setTimeout(bind, 100);
   setTimeout(bind, 700);
   setTimeout(bind, 1500);
+})();
+</script>
+
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
 })();
 </script>
 
@@ -3539,6 +3881,120 @@ button[data-novaHomeExport="1"]{
 })();
 </script>
 
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
+})();
+</script>
+
 </body></html>');
       w.document.close();
       return;
@@ -3629,6 +4085,120 @@ button[data-novaHomeExport="1"]{
   setTimeout(bind, 100);
   setTimeout(bind, 700);
   setTimeout(bind, 1500);
+})();
+</script>
+
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
 })();
 </script>
 
@@ -3748,6 +4318,120 @@ button[data-novaHomeExport="1"]{
   setTimeout(bind, 100);
   setTimeout(bind, 700);
   setTimeout(bind, 1500);
+})();
+</script>
+
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
 })();
 </script>
 
@@ -4053,6 +4737,120 @@ button[data-novaHomeExport="1"]{
 })();
 </script>
 
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
+})();
+</script>
+
 </body></html>');
       w.document.close();
       return;
@@ -4143,6 +4941,120 @@ button[data-novaHomeExport="1"]{
   setTimeout(bind, 100);
   setTimeout(bind, 700);
   setTimeout(bind, 1500);
+})();
+</script>
+
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
 })();
 </script>
 
@@ -4262,6 +5174,120 @@ button[data-novaHomeExport="1"]{
   setTimeout(bind, 100);
   setTimeout(bind, 700);
   setTimeout(bind, 1500);
+})();
+</script>
+
+
+
+<!-- Nova v2.39 FINAL Last Square Auto Numbers Patch -->
+<script id="nova-v239-final-last-square-auto-numbers-patch">
+(function(){
+  if (window.__novaFinalLastSquareAutoNumbersPatch) return;
+  window.__novaFinalLastSquareAutoNumbersPatch = true;
+
+  function getState(){
+    try { if (typeof state !== 'undefined') return state; } catch(e) {}
+    return window.state || null;
+  }
+  function getGames(){
+    try { if (typeof games !== 'undefined') return games; } catch(e) {}
+    return window.games || {};
+  }
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function filledCount(s){
+    return (s && s.picks ? s.picks : []).filter(function(p){ return p && (p.name || p.trace); }).length;
+  }
+  function hasNumbers(s){
+    return !!(s && ((s.top || []).some(Boolean) || (s.side || []).some(Boolean)));
+  }
+  function shuffleNums(){
+    var arr=[0,1,2,3,4,5,6,7,8,9];
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=arr[i]; arr[i]=arr[j]; arr[j]=t;
+    }
+    return arr.map(String);
+  }
+  async function saveAll(){
+    var s=getState();
+    try{
+      var g=getGames();
+      if(s && s.id && g){ g[s.id]=clone(s); }
+    }catch(e){}
+    try{ if(typeof persist==='function') persist(); }catch(e){}
+    try{ if(typeof novaSaveBoardNow==='function') await novaSaveBoardNow(false); }catch(e){}
+    try{ if(typeof novaLongSaveNow==='function') await novaLongSaveNow(); }catch(e){}
+  }
+
+  window.novaAutoNumbersOnFinalSquare = async function(force){
+    var s=getState();
+    if(!s || !s.picks) return false;
+    var full = filledCount(s) >= 100;
+    if(!full) return false;
+    if(!force && hasNumbers(s)) return false;
+    s.top = shuffleNums();
+    s.side = shuffleNums();
+    if(Array.isArray(s.selected)) s.selected=[];
+    if(typeof render==='function') render();
+    await saveAll();
+    return true;
+  };
+
+  function wrapFunction(name){
+    var fn=window[name];
+    if(typeof fn !== 'function' || fn.__novaAutoNumbersWrapped) return;
+    var wrapped=function(){
+      var result=fn.apply(this, arguments);
+      Promise.resolve(result).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+      return result;
+    };
+    wrapped.__novaAutoNumbersWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function bind(){
+    wrapFunction('savePick');
+    wrapFunction('applyTrace');
+    wrapFunction('novaProtectedSavePick');
+    wrapFunction('novaEnterSaveSelection');
+    wrapFunction('novaSaveCellName');
+    wrapFunction('randomSelectSquares');
+
+    var saveBtn=document.querySelector('.inputRow button');
+    if(saveBtn){
+      saveBtn.style.display='block';
+      saveBtn.textContent='Save';
+      saveBtn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof window.savePick==='function'){
+          var r=window.savePick();
+          Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+        }
+      };
+    }
+
+    var input=document.getElementById('nameInput');
+    if(input){
+      input.onkeydown=function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(typeof window.savePick==='function'){
+            var r=window.savePick();
+            Promise.resolve(r).then(function(){ setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 40); });
+          }
+        }
+      };
+    }
+
+    setTimeout(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 100);
+  setTimeout(bind, 600);
+  setTimeout(bind, 1500);
+  setInterval(function(){ window.novaAutoNumbersOnFinalSquare(false); }, 2500);
 })();
 </script>
 
